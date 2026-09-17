@@ -250,7 +250,19 @@ spec:
           git config user.email "jenkins@platform-ci"
           git config user.name  "Jenkins CI"
 
-          FILE=../${GITOPS_FILE}
+          # 本仓与 GitOps 仓是**两个不同的仓库**（sre-lab 仓内所有 job 共用同一个工作区，
+          # 所以那边的路径是相对的；这里必须先把 GitOps 仓 clone 出来）。
+          # 因此 FILE 是 .gitops 内的路径，不能带 ../
+          FILE=${GITOPS_FILE}
+
+          # 首次落地时清单可能还不存在 —— 此时跳过写回而不是报错。
+          # 这样引导顺序可以是「先跑通镜像，再落 GitOps 清单」，避免 ArgoCD 先同步到一个
+          # 还不存在的 image tag 而 ImagePullBackOff。
+          if [ ! -f "${FILE}" ]; then
+            echo "GitOps 清单 ${FILE} 尚不存在，本次跳过写回（先跑通镜像，人工落地清单）"
+            exit 0
+          fi
+
           OLD_IMAGE=$(grep -oP "(?<=image: )${REGISTRY}/${IMAGE_NAME}:\\S+" ${FILE} || echo "none")
           echo "旧镜像: ${OLD_IMAGE}"
           echo "新镜像: ${IMAGE_REF}"
