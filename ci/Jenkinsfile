@@ -167,6 +167,8 @@ spec:
       steps {
         sh '''
           set -e
+          # db 仓是私有的，clone 前必须先把 netrc 装上（sre-lab 那边是公开仓，没这一步）
+          install -m 600 /home/jenkins/gitea-cred/netrc $HOME/.netrc
           rm -rf ${DB_DIR}
           git clone --depth 1 ${DB_REPO} ${DB_DIR}
           test -f ${DB_DIR}/migrations/001_init.sql
