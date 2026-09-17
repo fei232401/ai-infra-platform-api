@@ -97,7 +97,10 @@ spec:
     GITOPS_FILE    = 'sre-lab-gitops/production/apps/ai-platform/api.yaml'
     DB_REPO        = 'http://gitea:3000/fei232401/ai-infra-platform-db.git'
     DB_DIR         = 'ai-infra-platform-db'
+    # 用完整 FQDN：短名只在同命名空间可用，跨命名空间会解析不到（本项目栽过这个跟头）
+    PG_FQDN        = 'postgres.ai-platform.svc.cluster.local'
     TEST_DSN       = 'postgresql+asyncpg://app:app@postgres.ai-platform.svc.cluster.local:5432/ai_infra_test'
+    MIGRATE_DSN    = 'postgresql+asyncpg://app:app@postgres.ai-platform.svc.cluster.local:5432/ai_infra'
     SERVICE_NAME   = 'ai-infra-platform-api'
     PIPELINE_TITLE = 'platform CI'
     GIT_TERMINAL_PROMPT = '0'
@@ -187,6 +190,22 @@ spec:
             export SCHEMA_DIR="$WORKSPACE/${DB_DIR}"
             export TEST_DATABASE_DSN="${TEST_DSN}"
             python -m pytest -q --tb=short
+          '''
+        }
+      }
+    }
+
+    stage('Migrate') {
+      when { expression { env.SHOULD_BUILD == 'true' } }
+      steps {
+        // 在构建/写回 GitOps **之前**跑：迁移失败就不该让新镜像上线。
+        // 用 db 仓（唯一 schema 契约）里的 001_init.sql，应用到交付库。
+        container('test') {
+          sh '''
+            set -e
+            export SCHEMA_DIR="$WORKSPACE/${DB_DIR}"
+            export MIGRATE_DSN="${MIGRATE_DSN}"
+            python ci/migrate.py
           '''
         }
       }
