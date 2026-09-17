@@ -97,7 +97,8 @@ spec:
     GITOPS_FILE    = 'sre-lab-gitops/production/apps/ai-platform/api.yaml'
     DB_REPO        = 'http://gitea:3000/fei232401/ai-infra-platform-db.git'
     DB_DIR         = 'ai-infra-platform-db'
-    # 用完整 FQDN：短名只在同命名空间可用，跨命名空间会解析不到（本项目栽过这个跟头）
+    // 注意：environment{} 是 Groovy 代码区，注释只能用 // 或 /* */，写 # 会在**编译期**直接
+    // 报 "unexpected char: '#'"，连 Checkout 都跑不到 —— 但 sh ''' ''' 里的 # 是 shell 注释，没问题
     PG_FQDN        = 'postgres.ai-platform.svc.cluster.local'
     TEST_DSN       = 'postgresql+asyncpg://app:app@postgres.ai-platform.svc.cluster.local:5432/ai_infra_test'
     MIGRATE_DSN    = 'postgresql+asyncpg://app:app@postgres.ai-platform.svc.cluster.local:5432/ai_infra'
