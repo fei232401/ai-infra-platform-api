@@ -1,5 +1,7 @@
 # AI Infra Platform · Control Plane API
 
+> **已归档（2026-10）**：本仓库已合并到 [inference-platform](https://github.com/fei232401/inference-platform) 的 `services/api/`，后续开发和修复都在那里进行。本仓库保留合并前的历史状态，下面的说明和数字可能已经过时。来源路径与提交记录见主仓库的 `docs/source-provenance.json`。
+
 推理平台的控制层后端。
 
 它回答三个问题：**有哪些推理后端可用**、**请求该走哪一条路**、**每个请求实际发生了什么**。
